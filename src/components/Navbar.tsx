@@ -17,6 +17,7 @@ const Navbar: FC = () => {
           src={NavbarTopImage}
           alt="jz-mart-top-image"
           height={70}
+          className="w-full"
           priority
         />
       </div>

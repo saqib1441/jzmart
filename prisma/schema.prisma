@@ -10,7 +10,7 @@ datasource db {
 
 model Otp {
   id        String   @id @default(cuid())
-  otp       String   @db.VarChar(6)
+  otp       String
   email     String   @db.VarChar(150)
   purpose   Purpose  @default(REGISTER)
   otpExpiry DateTime

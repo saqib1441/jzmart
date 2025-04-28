@@ -32,6 +32,13 @@ const ApiSlice = createApi({
         body: data,
       }),
     }),
+    updateAvatar: builder.mutation({
+      query: (data) => ({
+        url: "/update-avatar",
+        method: "PUT",
+        body: data,
+      }),
+    }),
     userProfile: builder.query({
       query: () => ({
         url: "/profile",
@@ -77,5 +84,6 @@ export const {
   useUpdateProfileMutation,
   useChangePasswordMutation,
   useDeleteProfileMutation,
+  useUpdateAvatarMutation,
 } = ApiSlice;
 export default ApiSlice;

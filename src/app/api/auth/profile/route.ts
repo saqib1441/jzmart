@@ -21,6 +21,7 @@ export const GET = async () => {
         id: true,
         name: true,
         email: true,
+        avatar: true,
         phone: true,
         city: true,
         address: true,

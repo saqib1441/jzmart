@@ -18,6 +18,7 @@ CREATE TABLE `User` (
     `name` VARCHAR(100) NOT NULL,
     `email` VARCHAR(150) NOT NULL,
     `password` VARCHAR(191) NOT NULL,
+    `avatar` VARCHAR(191) NULL,
     `phone` VARCHAR(15) NULL,
     `city` VARCHAR(100) NULL,
     `address` VARCHAR(255) NULL,

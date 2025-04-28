@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,8 @@ import { useRouter } from "next/navigation";
 import UpdateProfile from "@/components/UpdateProfile";
 import ChangePassword from "@/components/ChangePassword";
 import DeleteProfile from "@/components/DeleteProfile";
+import UpdateAvatar from "@/components/UpdateAvatar";
+import Image from "next/image";
 
 const ProfilePage: FC = () => {
   const { isLoading, data } = useUserProfileQuery({});
@@ -25,6 +26,7 @@ const ProfilePage: FC = () => {
   const [userData, setUserData] = useState<ProfileType>({
     name: "",
     email: "",
+    avatar: "",
     phone: "",
     city: "",
     address: "",
@@ -52,6 +54,7 @@ const ProfilePage: FC = () => {
         name: user.name || "Not set",
         email: user.email || "Not set",
         phone: user.phone || "Not set",
+        avatar: user.avatar,
         city: user.city || "Not set",
         address: user.address || "Not set",
         interest: Array.isArray(user.interest)
@@ -76,10 +79,17 @@ const ProfilePage: FC = () => {
       <Card className="bg-primary pb-0">
         <CardHeader>
           <div className="flex gap-5 items-center">
-            <Avatar className="size-32 border-4">
-              <AvatarImage src="/profile.jpg" />
+            <Avatar className="size-32 border-4 cursor-pointer">
+              <AvatarImage src={userData.avatar} />
               <AvatarFallback>
-                <span className="text-5xl font-bold font-inter">SA</span>
+                <Image
+                  src="/profile.jpg"
+                  alt="fallback avatar"
+                  className="w-full h-full"
+                  width={32}
+                  height={32}
+                  priority
+                />
               </AvatarFallback>
             </Avatar>
             <div>
@@ -128,8 +138,9 @@ const ProfilePage: FC = () => {
             </Table>
           </div>
 
-          <div className="space-x-4">
+          <div className="space-x-4 flex items-center">
             <UpdateProfile />
+            <UpdateAvatar />
             <ChangePassword />
             <DeleteProfile />
           </div>

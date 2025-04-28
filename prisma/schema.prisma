@@ -25,6 +25,7 @@ model User {
   name      String    @db.VarChar(100)
   email     String    @unique(map: "User_email_key") @db.VarChar(150)
   password  String
+  avatar    String?
   phone     String?   @db.VarChar(15)
   city      String?   @db.VarChar(100)
   address   String?   @db.VarChar(255)

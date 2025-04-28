@@ -22,6 +22,7 @@ import {
   useLogoutUserMutation,
   useUserProfileQuery,
 } from "@/store/slices/ApiSlice";
+import Image from "next/image";
 
 const NavbarDropdown = () => {
   const router = useRouter();
@@ -46,14 +47,6 @@ const NavbarDropdown = () => {
         error instanceof Error ? error.message : "Something went wrong";
       return toast.error(err.data.message || errMessage);
     }
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .slice(0, 2)
-      .map((word) => word[0]?.toUpperCase())
-      .join("");
   };
 
   const avatarRouter = () => {
@@ -82,15 +75,16 @@ const NavbarDropdown = () => {
           <div className="w-full">
             <div className="w-fit mx-auto" onClick={avatarRouter}>
               <Avatar className="size-14 cursor-pointer">
-                <AvatarImage src="/profil.jpg" />
+                <AvatarImage src={data.data.avatar} />
                 <AvatarFallback>
-                  <div className="text-2xl">
-                    {isLoggedIn && data?.data ? (
-                      getInitials(data.data.name)
-                    ) : (
-                      <FaRegUser />
-                    )}
-                  </div>
+                  <Image
+                    src="/profile.jpg"
+                    alt="fallback avatar"
+                    className="w-full h-full"
+                    width={32}
+                    height={32}
+                    priority
+                  />
                 </AvatarFallback>
               </Avatar>
             </div>

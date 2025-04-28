@@ -54,6 +54,7 @@ export type ProfileType = {
   id?: number;
   name: string;
   email: string;
+  avatar: string;
   role?: UserRole;
   phone?: string;
   city?: string;

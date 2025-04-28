@@ -22,7 +22,7 @@ const sendEmail = async (email: string, otp: string) => {
       html: `
         <div style="max-width: 600px; margin: auto; font-family: 'Poppins', sans-serif; color: #333; background: #f7f7f7; padding: 20px; border-radius: 10px;">
           <div style="background: #fff; padding: 20px; border-radius: 10px; text-align: center;">
-            <img src="https://your-logo-url.com/jzmart-logo.png" alt="JZ Mart Logo" style="max-width: 150px; margin-bottom: 20px;" />
+            <img src="https://jzmart.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Flogo.fcf7e463.png&w=256&q=75" alt="JZ Mart Logo" style="max-width: 150px; margin-bottom: 20px;" />
             
             <h2 style="color: #C9AF2F; font-family: 'Inter', sans-serif;">Your OTP Code</h2>
             <p style="font-size: 16px;">Use the following OTP to complete your authentication:</p>

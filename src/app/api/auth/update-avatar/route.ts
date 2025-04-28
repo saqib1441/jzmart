@@ -1,83 +1,56 @@
 import { NextRequest } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
-import os from "os";
-import ErrorHandler from "@/server/utils/ErrorHandler";
-import { formatError } from "@/server/utils/errorMessage";
-import ResponseHandler from "@/server/utils/ResponseHandler";
-import UserId from "@/server/utils/UserId";
+import { put } from "@vercel/blob";
 import { prisma } from "@/server/db/config";
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
-async function processFormData(req: NextRequest) {
-  const formData = await req.formData();
-  const file = formData.get("avatar") as File;
-  if (!file) {
-    ErrorHandler(404, "File not found");
-  }
-
-  const tempDir = os.tmpdir();
-  const tempFilePath = path.join(tempDir, `avatar-${Date.now()}-${file.name}`);
-
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await fs.writeFile(tempFilePath, buffer);
-
-  return {
-    filepath: tempFilePath,
-    originalFilename: file.name,
-    mimetype: file.type,
-    size: file.size,
-  };
-}
+import UserId from "@/server/utils/UserId";
+import { formatError } from "@/server/utils/errorMessage";
+import ErrorHandler from "@/server/utils/ErrorHandler";
+import ResponseHandler from "@/server/utils/ResponseHandler";
 
 export async function PUT(req: NextRequest) {
   try {
-    const fileData = await processFormData(req);
-
-    const uploadDir = path.join(process.cwd(), "public", "avatar");
-
-    try {
-      await fs.access(uploadDir);
-    } catch {
-      await fs.mkdir(uploadDir, { recursive: true });
+    // Get the current user ID
+    const id = await UserId();
+    if (!id) {
+      return ErrorHandler(401, "Unauthorized");
     }
 
-    const originalFilename = fileData.originalFilename || "avatar";
-
-    const uniqueFilename = `${Date.now()}-${originalFilename}`;
-    const destinationPath = path.join(uploadDir, uniqueFilename);
-
-    await fs.copyFile(fileData.filepath, destinationPath);
-    await fs.unlink(fileData.filepath);
-    const filePath = `/avatar/${uniqueFilename}`;
-
-    const id = await UserId();
-
+    // Get the user from the database
     const user = await prisma.user.findUnique({
-      where: {
-        id,
-      },
+      where: { id },
     });
 
     if (!user) {
       return ErrorHandler(404, "User not found");
     }
 
-    await prisma.user.update({
-      where: {
-        id,
-      },
-      data: {
-        avatar: filePath,
-      },
+    // Process the uploaded file
+    const formData = await req.formData();
+    const file = formData.get("avatar") as File;
+
+    if (!file) {
+      return ErrorHandler(404, "File not found");
+    }
+
+    // Generate a unique filename
+    const originalFilename = file.name || "avatar";
+    const uniqueFilename = `${Date.now()}-${originalFilename}`;
+
+    // Upload to Vercel Blob Storage
+    const blob = await put(`avatars/${uniqueFilename}`, file, {
+      access: "public",
+      contentType: file.type,
     });
 
-    return ResponseHandler(200, "Avatar Uploaded");
+    // Use the URL returned by Vercel Blob
+    const filePath = blob.url;
+
+    // Update the user record in the database
+    await prisma.user.update({
+      where: { id },
+      data: { avatar: filePath },
+    });
+
+    return ResponseHandler(200, "Avatar Uploaded", { avatar: filePath });
   } catch (error: unknown) {
     const err =
       error instanceof Error ? error : new Error("Failed to upload file");

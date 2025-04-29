@@ -6,10 +6,18 @@ import UserId from "@/server/utils/UserId";
 import { cookies } from "next/headers";
 import { v2 as cloudinary } from "cloudinary";
 
+// Configure Cloudinary first before using it
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 // Extracts public ID from Cloudinary URL
 const extractPublicId = (url: string): string | null => {
   if (!url || !url.includes("cloudinary")) return null;
 
+  // Updated regex to better handle typical Cloudinary URLs
   const matches = url.match(/\/v\d+\/([^/]+)\/([^/.]+)/);
   return matches ? `${matches[1]}/${matches[2]}` : null;
 };
@@ -31,7 +39,16 @@ export const DELETE = async () => {
       const publicId = extractPublicId(user.avatar);
       if (publicId) {
         try {
-          await cloudinary.uploader.destroy(publicId);
+          const result = await cloudinary.uploader.destroy(publicId);
+
+          // Log result for debugging if needed
+          console.log("Cloudinary delete result:", result);
+
+          if (result.result !== "ok") {
+            console.warn(
+              `Cloudinary deletion warning for ${publicId}: ${result.result}`
+            );
+          }
         } catch (error: unknown) {
           const errMessage = formatError(error);
           const err =

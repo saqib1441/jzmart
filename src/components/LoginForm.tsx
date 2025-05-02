@@ -1,5 +1,5 @@
 "use client";
-import { FC, FormEvent, useEffect, useState } from "react";
+import { FC, FormEvent, useState } from "react";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -9,9 +9,8 @@ import { useRouter } from "next/navigation";
 import { useLoginMutation } from "@/store/slices/ApiSlice";
 import Loader from "./Loader";
 import { ErrorDTO } from "@/types/types";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "@/store/store";
-import { setIsLoggedIn } from "@/store/slices/AuthSlice";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/store/store";
 import ForgotPassword from "./ForgotPassword";
 
 const LoginForm: FC = () => {
@@ -19,14 +18,7 @@ const LoginForm: FC = () => {
   const [password, setPassword] = useState("");
   const [loginUser, { isLoading }] = useLoginMutation();
   const dispatch = useDispatch<AppDispatch>();
-  const { isLoggedIn } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      router.push("/");
-    }
-  }, [isLoggedIn, router]);
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
@@ -40,7 +32,6 @@ const LoginForm: FC = () => {
 
       setEmail("");
       setPassword("");
-      dispatch(setIsLoggedIn(true));
       toast.success(response.message);
       return router.push("/");
     } catch (error: unknown) {

@@ -9,7 +9,6 @@ export type TempDataType = {
 
 type InitialStateType = {
   tempData: Partial<TempDataType>;
-  isLoggedIn: boolean;
 };
 
 const initialState: InitialStateType = {
@@ -19,7 +18,6 @@ const initialState: InitialStateType = {
     password: "",
     purpose: "",
   },
-  isLoggedIn: false,
 };
 
 const AuthSlice = createSlice({
@@ -32,13 +30,10 @@ const AuthSlice = createSlice({
     clearTempData: (state) => {
       state.tempData = {};
     },
-    setIsLoggedIn: (state, action) => {
-      state.isLoggedIn = action.payload;
-    },
   },
 });
 
 // Action creators are generated for each case reducer function
-export const { setTempData, clearTempData, setIsLoggedIn } = AuthSlice.actions;
+export const { setTempData, clearTempData } = AuthSlice.actions;
 
 export default AuthSlice.reducer;

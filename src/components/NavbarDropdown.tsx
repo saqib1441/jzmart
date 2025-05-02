@@ -14,9 +14,8 @@ import { TbLogout2, TbMessage2Star, TbWorldSearch } from "react-icons/tb";
 import { useRouter } from "next/navigation";
 import { ErrorDTO } from "@/types/types";
 import toast from "react-hot-toast";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "@/store/store";
-import { setIsLoggedIn } from "@/store/slices/AuthSlice";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/store/store";
 import Loader from "./Loader";
 import {
   useLogoutUserMutation,
@@ -27,19 +26,14 @@ import Image from "next/image";
 const NavbarDropdown = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const { isLoggedIn } = useSelector((state: RootState) => state.auth);
   const [logoutUser, { isLoading }] = useLogoutUserMutation();
-  const { data, isLoading: isFetching } = useUserProfileQuery(
-    {},
-    { skip: !isLoggedIn }
-  );
+  const { data, isLoading: isFetching } = useUserProfileQuery({});
 
   const navigate = (url: string) => router.push(url);
 
   const logoutHander = async () => {
     try {
       const response = await logoutUser({}).unwrap();
-      dispatch(setIsLoggedIn(false));
       return toast.success(response.message);
     } catch (error: unknown) {
       const err = error as ErrorDTO;
@@ -50,9 +44,7 @@ const NavbarDropdown = () => {
   };
 
   const avatarRouter = () => {
-    if (isLoggedIn) {
-      router.push("/profile");
-    }
+    router.push("/profile");
   };
 
   if (isFetching) {
@@ -75,7 +67,7 @@ const NavbarDropdown = () => {
           <div className="w-full">
             <div className="w-fit mx-auto" onClick={avatarRouter}>
               <Avatar className="size-14 cursor-pointer">
-                <AvatarImage src={data.data.avatar} />
+                <AvatarImage src={data?.data?.avatar} />
                 <AvatarFallback>
                   <Image
                     src="/profile.jpg"
@@ -89,7 +81,7 @@ const NavbarDropdown = () => {
               </Avatar>
             </div>
             <div className="flex items-center justify-center mt-2 text-base ">
-              {isLoggedIn && data?.data ? (
+              {data?.data ? (
                 <span>{data.data.name}</span>
               ) : (
                 <>
@@ -110,7 +102,7 @@ const NavbarDropdown = () => {
             </div>
           </div>
         </DropdownMenuItem>
-        {isLoggedIn && data?.data ? (
+        {data?.data ? (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => navigate("profile")}>

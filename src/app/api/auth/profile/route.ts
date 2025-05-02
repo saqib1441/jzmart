@@ -1,34 +1,23 @@
-import { prisma } from "@/server/db/config";
-import ErrorHandler from "@/server/utils/ErrorHandler";
-import { formatError } from "@/server/utils/errorMessage";
-import ResponseHandler from "@/server/utils/ResponseHandler";
-import UserId from "@/server/utils/UserId";
+import { prisma } from "@/lib/db/config";
+import { isAuthorized } from "@/utils/authorization";
+import ErrorHandler from "@/utils/ErrorHandler";
+import { formatError } from "@/utils/errorMessage";
+import ResponseHandler from "@/utils/ResponseHandler";
 
 // @desc    Get current user profile
 // @route   GET /api/auth/profile
 // @access  Private
 export const GET = async () => {
   try {
-    const userId = await UserId();
+    const isLoggedIn = await isAuthorized();
 
-    if (!userId) {
+    if (!isLoggedIn)
       return ErrorHandler(401, "Please login first to access this page.");
-    }
 
     const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        avatar: true,
-        phone: true,
-        city: true,
-        address: true,
-        interest: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
+      where: { id: isLoggedIn.id },
+      omit: {
+        password: true,
       },
     });
 

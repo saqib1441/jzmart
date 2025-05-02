@@ -9,8 +9,6 @@ import { FC } from "react";
 import { useUserProfileQuery } from "@/store/slices/ApiSlice";
 import { ProfileType } from "@/types/types";
 import Loader from "@/components/Loader";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store/store";
 import { useRouter } from "next/navigation";
 import UpdateProfile from "@/components/UpdateProfile";
 import ChangePassword from "@/components/ChangePassword";
@@ -20,7 +18,6 @@ import Image from "next/image";
 
 const ProfilePage: FC = () => {
   const { isLoading, data } = useUserProfileQuery({});
-  const { isLoggedIn } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
 
   const [userData, setUserData] = useState<ProfileType>({
@@ -44,10 +41,6 @@ const ProfilePage: FC = () => {
   ]);
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      router.push("/login");
-    }
-
     if (data?.data) {
       const user = data.data;
       setUserData({
@@ -63,7 +56,7 @@ const ProfilePage: FC = () => {
         createdAt: new Date(user.createdAt),
       });
     }
-  }, [data, isLoggedIn, router]);
+  }, [data, router]);
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("en-GB", {

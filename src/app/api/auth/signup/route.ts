@@ -1,9 +1,9 @@
-import { prisma } from "@/server/db/config";
-import ErrorHandler from "@/server/utils/ErrorHandler";
-import { formatError } from "@/server/utils/errorMessage";
-import { hashPassword } from "@/server/utils/HandlePassword";
-import ResponseHandler from "@/server/utils/ResponseHandler";
-import StoreCookie from "@/server/utils/StoreCookie";
+import { prisma } from "@/lib/db/config";
+import ErrorHandler from "@/utils/ErrorHandler";
+import { formatError } from "@/utils/errorMessage";
+import { hashPassword } from "@/utils/HandlePassword";
+import ResponseHandler from "@/utils/ResponseHandler";
+import StoreCookie from "@/utils/StoreCookie";
 import { SignupData } from "@/types/types";
 import jwt from "jsonwebtoken";
 import { NextRequest } from "next/server";
@@ -27,9 +27,8 @@ export const POST = async (req: NextRequest) => {
     const userExist = await prisma.user.findUnique({
       where: { email },
     });
-    if (userExist) {
-      return ErrorHandler(409, "User already exists");
-    }
+
+    if (userExist) return ErrorHandler(409, "User already exists");
 
     // Find a valid, non-expired OTP for the email and purpose
     const otpExist = await prisma.otp.findFirst({
@@ -43,22 +42,17 @@ export const POST = async (req: NextRequest) => {
     });
 
     // Return error if no valid OTP found
-    if (!otpExist) {
-      return ErrorHandler(401, "OTP is expired or does not exist");
-    }
+    if (!otpExist) return ErrorHandler(401, "OTP is expired or does not exist");
 
     // Decode the OTP token using JWT to extract the original OTP string
     const decoded = jwt.verify(otpExist.otp, JWT_SECRET) as { otp: string };
 
     // Compare user input OTP with decoded OTP
-    if (otp !== decoded.otp) {
-      return ErrorHandler(401, "Invalid OTP");
-    }
+    if (otp !== decoded.otp) return ErrorHandler(401, "Invalid OTP");
 
     // Enforce a minimum password length
-    if (password.length < 6) {
+    if (password.length < 6)
       return ErrorHandler(400, "Password must be at least 6 characters long");
-    }
 
     // Normalize and sanitize email
     const modifiedEmail = email.trim().toLocaleLowerCase();
@@ -86,11 +80,8 @@ export const POST = async (req: NextRequest) => {
     // Fetch newly created user for response (excluding password)
     const data = await prisma.user.findUnique({
       where: { email: modifiedEmail },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
+      omit: {
+        password: true,
       },
     });
 

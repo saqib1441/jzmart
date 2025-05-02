@@ -1,21 +1,22 @@
-import { prisma } from "@/server/db/config";
-import ResponseHandler from "@/server/utils/ResponseHandler";
+import { prisma } from "@/lib/db/config";
+import ResponseHandler from "@/utils/ResponseHandler";
 import { NextRequest } from "next/server";
-import UserId from "@/server/utils/UserId";
-import ErrorHandler from "@/server/utils/ErrorHandler";
-import { formatError } from "@/server/utils/errorMessage";
+import ErrorHandler from "@/utils/ErrorHandler";
+import { formatError } from "@/utils/errorMessage";
+import { isAuthorized } from "@/utils/authorization";
 
 export const PUT = async (req: NextRequest) => {
   try {
-    // Parse request body to get new name
-    const { name, address, city, interest, phone } = await req.json();
+    const isLoggedIn = await isAuthorized();
 
-    // Get the authenticated user ID (you should implement auth inside `UserId`)
-    const id = await UserId();
+    if (!isLoggedIn)
+      return ErrorHandler(401, "Please login first to update your profile");
+
+    const { name, address, city, interest, phone } = await req.json();
 
     // Update user's name
     await prisma.user.update({
-      where: { id },
+      where: { id: isLoggedIn.id },
       data: { name, address, city, interest, phone },
     });
 

@@ -17,7 +17,6 @@ import toast from "react-hot-toast";
 import Loader from "./Loader";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store/store";
-import { setIsLoggedIn } from "@/store/slices/AuthSlice";
 import { useRouter } from "next/navigation";
 import { ErrorDTO } from "@/types/types";
 
@@ -30,7 +29,6 @@ const DeleteProfile = () => {
   const handleDelete = async () => {
     try {
       const response = await deleteProfile({}).unwrap();
-      dispatch(setIsLoggedIn(false));
       toast.success(response.message);
       setOpen(false);
       return router.push("/login");

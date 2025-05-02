@@ -1,5 +1,5 @@
 "use client";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,11 +17,7 @@ import {
 import { ErrorDTO } from "@/types/types";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
-import {
-  setIsLoggedIn,
-  setTempData,
-  TempDataType,
-} from "@/store/slices/AuthSlice";
+import { setTempData, TempDataType } from "@/store/slices/AuthSlice";
 import Loader from "@/components/Loader";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,15 +28,7 @@ const VerificationPage: FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [signupUser, { isLoading: isCreating }] = useSignupUserMutation();
   const [resendOtp, { isLoading: isResending }] = useSendOtpMutation();
-  const { tempData, isLoggedIn } = useSelector(
-    (state: RootState) => state.auth
-  );
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      router.push("/");
-    }
-  }, [isLoggedIn, router]);
+  const { tempData } = useSelector((state: RootState) => state.auth);
 
   // Handle OTP submission
   const handleSubmit = async () => {
@@ -51,7 +39,6 @@ const VerificationPage: FC = () => {
     try {
       const response = await signupUser({ ...tempData, otp }).unwrap();
       dispatch(setTempData({}));
-      dispatch(setIsLoggedIn(true));
       setOtp("");
       toast.success(response.message);
       return router.push("/");

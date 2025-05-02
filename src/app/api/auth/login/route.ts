@@ -1,9 +1,9 @@
-import { prisma } from "@/server/db/config";
-import ErrorHandler from "@/server/utils/ErrorHandler";
-import { formatError } from "@/server/utils/errorMessage";
-import { verifyPassword } from "@/server/utils/HandlePassword";
-import ResponseHandler from "@/server/utils/ResponseHandler";
-import StoreCookie from "@/server/utils/StoreCookie";
+import { prisma } from "@/lib/db/config";
+import ErrorHandler from "@/utils/ErrorHandler";
+import { formatError } from "@/utils/errorMessage";
+import { verifyPassword } from "@/utils/HandlePassword";
+import ResponseHandler from "@/utils/ResponseHandler";
+import StoreCookie from "@/utils/StoreCookie";
 import { NextRequest } from "next/server";
 
 // @desc    Login User
@@ -14,9 +14,8 @@ export const POST = async (req: NextRequest) => {
     const body = await req.json();
     const { email, password } = body;
 
-    if (!email || !password) {
+    if (!email || !password)
       return ErrorHandler(400, "Email and password are required.");
-    }
 
     // Find user by unique email and select required fields
     const existingUser = await prisma.user.findUnique({
@@ -28,37 +27,23 @@ export const POST = async (req: NextRequest) => {
       },
     });
 
-    if (!existingUser) {
-      return ErrorHandler(404, "User not found.");
-    }
+    if (!existingUser) return ErrorHandler(404, "User not found.");
 
     // Verify password
     const isValidPassword = await verifyPassword(
       existingUser.password,
       password
     );
-    if (!isValidPassword) {
-      return ErrorHandler(401, "Invalid credentials.");
-    }
+    if (!isValidPassword) return ErrorHandler(401, "Invalid credentials.");
 
     // Get full user data excluding password
     const user = await prisma.user.findUnique({
       where: { id: existingUser.id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        phone: true,
-        city: true,
-        address: true,
-        interest: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
+      omit: {
+        password: true,
       },
     });
 
-    // Store auth cookie (likely a JWT or session)
     await StoreCookie(user?.id ?? "");
 
     return ResponseHandler(200, "Logged in successfully.", user);

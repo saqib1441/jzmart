@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
-import { prisma } from "@/server/db/config";
-import UserId from "@/server/utils/UserId";
-import { formatError } from "@/server/utils/errorMessage";
-import ErrorHandler from "@/server/utils/ErrorHandler";
-import ResponseHandler from "@/server/utils/ResponseHandler";
+import { prisma } from "@/lib/db/config";
+import { formatError } from "@/utils/errorMessage";
+import ErrorHandler from "@/utils/ErrorHandler";
+import ResponseHandler from "@/utils/ResponseHandler";
+import { isAuthorized } from "@/utils/authorization";
 
 // Configure Cloudinary
 cloudinary.config({
@@ -51,10 +51,11 @@ const uploadToCloudinary = async (
 
 export const PUT = async (req: NextRequest) => {
   try {
-    const userId = await UserId();
-    if (!userId) return ErrorHandler(401, "Unauthorized");
+    const isLoggedIn = await isAuthorized();
+    if (!isLoggedIn)
+      return ErrorHandler(401, "Please login first to update avatar");
 
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await prisma.user.findUnique({ where: { id: isLoggedIn.id } });
     if (!user) return ErrorHandler(404, "User not found");
 
     const formData = await req.formData();
@@ -62,11 +63,11 @@ export const PUT = async (req: NextRequest) => {
     if (!file) return ErrorHandler(404, "File not found");
 
     // Upload new avatar
-    const newAvatarUrl = await uploadToCloudinary(file, userId);
+    const newAvatarUrl = await uploadToCloudinary(file, isLoggedIn.id);
 
     // Update user record
     await prisma.user.update({
-      where: { id: userId },
+      where: { id: isLoggedIn.id },
       data: { avatar: newAvatarUrl },
     });
 
@@ -80,15 +81,12 @@ export const PUT = async (req: NextRequest) => {
           const errMessage = formatError(error);
           const err =
             error instanceof Error ? error : new Error("Failed to upload file");
-          console.error("Avatar upload error:", err);
           return ErrorHandler(500, errMessage, err.stack);
         }
       }
     }
 
-    return ResponseHandler(200, "Avatar Uploaded Successfully", {
-      avatar: newAvatarUrl,
-    });
+    return ResponseHandler(200, "Avatar Uploaded Successfully");
   } catch (error: unknown) {
     const errMessage = formatError(error);
     const err =

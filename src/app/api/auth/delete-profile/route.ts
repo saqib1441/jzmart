@@ -1,10 +1,10 @@
-import { prisma } from "@/server/db/config";
-import ErrorHandler from "@/server/utils/ErrorHandler";
-import { formatError } from "@/server/utils/errorMessage";
-import ResponseHandler from "@/server/utils/ResponseHandler";
-import UserId from "@/server/utils/UserId";
+import { prisma } from "@/lib/db/config";
+import ErrorHandler from "@/utils/ErrorHandler";
+import { formatError } from "@/utils/errorMessage";
+import ResponseHandler from "@/utils/ResponseHandler";
 import { cookies } from "next/headers";
 import { v2 as cloudinary } from "cloudinary";
+import { isAuthorized } from "@/utils/authorization";
 
 // Configure Cloudinary first before using it
 cloudinary.config({
@@ -24,15 +24,16 @@ const extractPublicId = (url: string): string | null => {
 
 export const DELETE = async () => {
   try {
-    const id = await UserId();
+    const isLoggedIn = await isAuthorized();
+
+    if (!isLoggedIn)
+      return ErrorHandler(401, "Please login first to delete your account!");
 
     const user = await prisma.user.findUnique({
-      where: { id },
+      where: { id: isLoggedIn.id },
     });
 
-    if (!user) {
-      return ErrorHandler(404, "User not found");
-    }
+    if (!user) return ErrorHandler(404, "User not found");
 
     // Delete avatar from Cloudinary if exists
     if (user.avatar) {
@@ -40,9 +41,6 @@ export const DELETE = async () => {
       if (publicId) {
         try {
           const result = await cloudinary.uploader.destroy(publicId);
-
-          // Log result for debugging if needed
-          console.log("Cloudinary delete result:", result);
 
           if (result.result !== "ok") {
             console.warn(
@@ -60,7 +58,7 @@ export const DELETE = async () => {
 
     // Delete user from database
     await prisma.user.delete({
-      where: { id },
+      where: { id: isLoggedIn.id },
     });
 
     const cookie = await cookies();

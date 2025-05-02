@@ -1,12 +1,12 @@
 "use client";
-import { FC, FormEvent, useEffect, useState } from "react";
+import { FC, FormEvent, useState } from "react";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "@/store/store";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/store/store";
 import { ErrorDTO } from "@/types/types";
 import { useSendOtpMutation } from "@/store/slices/ApiSlice";
 import Loader from "./Loader";
@@ -15,7 +15,6 @@ import { setTempData } from "@/store/slices/AuthSlice";
 const RegisterForm: FC = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const { isLoggedIn } = useSelector((state: RootState) => state.auth);
   const [sendOtp, { isLoading }] = useSendOtpMutation();
 
   const [formValues, setFormValues] = useState({
@@ -24,12 +23,6 @@ const RegisterForm: FC = () => {
     password: "",
     confirmPassword: "",
   });
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      router.push("/");
-    }
-  }, [isLoggedIn, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;

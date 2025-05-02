@@ -30,15 +30,14 @@ const ResetPasswordPage: FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [resendOtp, { isLoading: isResending }] = useSendOtpMutation();
   const [resetPassword, { isLoading: isReseting }] = useResetPasswordMutation();
-  const { tempData, isLoggedIn } = useSelector(
-    (state: RootState) => state.auth
-  );
+  const { tempData } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    if (isLoggedIn) {
-      router.push("/");
+    const purpose = tempData?.purpose === "FORGOT_PASSWORD";
+    if (!purpose) {
+      router.push("/login");
     }
-  }, [isLoggedIn, router]);
+  }, [tempData]);
 
   // Handle OTP submission
   const handleSubmit = async () => {

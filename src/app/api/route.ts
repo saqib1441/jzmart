@@ -1,6 +1,6 @@
-import ErrorHandler from "@/server/utils/ErrorHandler";
-import { formatError } from "@/server/utils/errorMessage";
-import ResponseHandler from "@/server/utils/ResponseHandler";
+import ErrorHandler from "@/utils/ErrorHandler";
+import { formatError } from "@/utils/errorMessage";
+import ResponseHandler from "@/utils/ResponseHandler";
 
 export const GET = () => {
   try {

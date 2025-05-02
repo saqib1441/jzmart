@@ -1,10 +1,15 @@
-import ErrorHandler from "@/server/utils/ErrorHandler";
-import { formatError } from "@/server/utils/errorMessage";
-import ResponseHandler from "@/server/utils/ResponseHandler";
+import { isAuthorized } from "@/utils/authorization";
+import ErrorHandler from "@/utils/ErrorHandler";
+import { formatError } from "@/utils/errorMessage";
+import ResponseHandler from "@/utils/ResponseHandler";
 import { cookies } from "next/headers";
 
 export const POST = async () => {
   try {
+    const isLoggedIn = await isAuthorized();
+    if (!isLoggedIn)
+      return ResponseHandler(401, "Please login first to logout!");
+
     const cookie = await cookies();
     cookie.delete("token");
 

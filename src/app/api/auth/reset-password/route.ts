@@ -1,10 +1,10 @@
-import { prisma } from "@/server/db/config";
-import ErrorHandler from "@/server/utils/ErrorHandler";
+import { prisma } from "@/lib/db/config";
+import ErrorHandler from "@/utils/ErrorHandler";
 import { NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
-import { hashPassword } from "@/server/utils/HandlePassword";
-import ResponseHandler from "@/server/utils/ResponseHandler";
-import { formatError } from "@/server/utils/errorMessage";
+import { hashPassword } from "@/utils/HandlePassword";
+import ResponseHandler from "@/utils/ResponseHandler";
+import { formatError } from "@/utils/errorMessage";
 
 // Ensure JWT_SECRET is defined
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -17,9 +17,7 @@ export const PUT = async (req: NextRequest) => {
     const { email, password, purpose, otp } = await req.json();
 
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      return ErrorHandler(409, "User not found!");
-    }
+    if (!user) return ErrorHandler(409, "User not found!");
 
     const otpRecord = await prisma.otp.findFirst({
       where: {
@@ -29,26 +27,15 @@ export const PUT = async (req: NextRequest) => {
       },
     });
 
-    if (!otpRecord) {
+    if (!otpRecord)
       return ErrorHandler(401, "OTP is expired or does not exist");
-    }
 
-    let decoded: { otp: string };
-    try {
-      decoded = jwt.verify(otpRecord.otp, JWT_SECRET) as { otp: string };
-    } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error("Unknown error");
-      const errMessage = formatError(error);
-      return ErrorHandler(500, errMessage, err.stack);
-    }
+    const decoded = jwt.verify(otpRecord.otp, JWT_SECRET) as { otp: string };
 
-    if (otp !== decoded.otp) {
-      return ErrorHandler(401, "Invalid OTP");
-    }
+    if (otp !== decoded.otp) return ErrorHandler(401, "Invalid OTP");
 
-    if (password.length < 6) {
+    if (password.length < 6)
       return ErrorHandler(400, "Password must be at least 6 characters long");
-    }
 
     const hashedPassword = await hashPassword(password);
 

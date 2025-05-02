@@ -1,12 +1,12 @@
-import { prisma } from "@/server/db/config";
+import { prisma } from "@/lib/db/config";
 import { Purpose } from "@/types/types";
-import ErrorHandler from "@/server/utils/ErrorHandler";
+import ErrorHandler from "@/utils/ErrorHandler";
 import { NextRequest, NextResponse } from "next/server";
 import otpGenerator from "otp-generator";
 import jwt from "jsonwebtoken";
-import sendEmail from "@/server/utils/sendEmail";
-import ResponseHandler from "@/server/utils/ResponseHandler";
-import { formatError } from "@/server/utils/errorMessage";
+import sendEmail from "@/utils/sendEmail";
+import ResponseHandler from "@/utils/ResponseHandler";
+import { formatError } from "@/utils/errorMessage";
 
 // Ensure JWT secret is available at runtime
 const JWT_SECRET = process.env.JWT_SECRET as string;
